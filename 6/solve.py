@@ -79,11 +79,17 @@ def part2():
 
   total = 0
 
+  path = set()
+  for x in range(nx):
+    for y in range(ny):
+      if data[y][x] == 'X': path.add((x,y))
+
   for x in range(nx):
     print('.', end='', flush=True)
     for y in range(ny):
       if data[y][x] == '#': continue
       if (x, y) == (px0, py0): continue
+      if (x, y) not in path: continue
       data[y][x] = '#'
       px, py, dir = px0, py0, dir0
       visited = set()
