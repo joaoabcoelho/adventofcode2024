@@ -8,7 +8,7 @@ with open(filename) as file:
   data = [ list(line.rstrip()) for line in file]
 
 nx = len(data[0])
-ny = len(data[0])
+ny = len(data)
 
 sides = [(-1,0),(1,0),(0,1),(0,-1)]
 
