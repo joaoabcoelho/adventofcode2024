@@ -8,24 +8,28 @@ with open(filename) as file:
   data = [ list(line.rstrip()) for line in file]
 
 room = [ d for d in data if '#' in d ]
-nx = len(room[0])
-ny = len(room)
-
-robot = (0,0)
-for x in range(nx):
-  found = False
-  for y in range(ny):
-    if room[y][x] == '@':
-      robot = (x,y)
-      found = True
-      break
-  if found: break
 
 moves = [ ]
 for d in data:
   if '#' not in d: moves += d 
 
 move_dict = {'>': (1,0), '<': (-1,0), 'v': (0,1), '^': (0,-1)}
+
+def get_robot(room):
+  nx = len(room[0])
+  ny = len(room)
+
+  robot = (0,0)
+  for x in range(nx):
+    found = False
+    for y in range(ny):
+      if room[y][x] == '@':
+        robot = (x,y)
+        found = True
+        break
+    if found: break
+
+  return robot
 
 def move(room, robot, m):
 
@@ -59,16 +63,20 @@ def print_room(room):
   for r in room: print(''.join(r))
 
 def gps(room):
+  nx = len(room[0])
+  ny = len(room)
   total = 0
   for x in range(nx):
     for y in range(ny):
-      if room[y][x] == 'O':
+      if room[y][x] in ['O', '[']:
         total += 100*y + x
   return total
   
 #==============================================================================
 
-def part1(room, robot):
+def part1(room):
+
+  robot = get_robot(room)
 
   for m in moves:
     room, robot = move(room, robot, m)
@@ -90,49 +98,25 @@ for r in room:
     if c == 'O': row += ['[', ']']
   room2.append(row)
 
-robot2 = (0,0)
-for x in range(2*nx):
-  found = False
-  for y in range(ny):
-    if room2[y][x] == '@':
-      robot2 = (x,y)
-      found = True
-      break
-  if found: break
-
-
 def push_box(room, p, m):
 
   if room[p[1]][p[0]] != '[':
     return room, False
 
-  if m == '<':
-    if room[p[1]][p[0]-1] == '#':
-      return room, False
-    elif room[p[1]][p[0]-1] == '.':
-      room[p[1]][p[0]-1] = '['
-      room[p[1]][p[0]] = ']'
-      room[p[1]][p[0]+1] = '.'
-      return room, True
-    else:
-      room, moved = push_box(room, (p[0]-2, p[1]), m)
-      if moved: return push_box(room, p, m)
-      else: return room, False
-
-  if m == '>':
-    if room[p[1]][p[0]+2] == '#':
-      return room, False
-    elif room[p[1]][p[0]+2] == '.':
-      room[p[1]][p[0]+1] = '['
-      room[p[1]][p[0]+2] = ']'
-      room[p[1]][p[0]] = '.'
-      return room, True
-    else:
-      room, moved = push_box(room, (p[0]+2, p[1]), m)
-      if moved: return push_box(room, p, m)
-      else: return room, False
-
   dx = move_dict[m]
+
+  if m == '<' or m == '>':
+    if room[p[1]][p[0]+(1+3*dx[0])//2] == '#':
+      return room, False
+    elif room[p[1]][p[0]+(1+3*dx[0])//2] == '.':
+      room[p[1]][p[0]+dx[0]] = '['
+      room[p[1]][p[0]+dx[0]+1] = ']'
+      room[p[1]][p[0]+(1-dx[0])//2] = '.'
+      return room, True
+    else:
+      room, moved = push_box(room, (p[0]+2*dx[0], p[1]), m)
+      if moved: return push_box(room, p, m)
+      else: return room, False
 
   if m == 'v' or m == '^':
     if room[p[1]+dx[1]][p[0]] == '#' or room[p[1]+dx[1]][p[0]+1] == '#':
@@ -143,16 +127,11 @@ def push_box(room, p, m):
       room[p[1]][p[0]] = '.'
       room[p[1]][p[0]+1] = '.'
       return room, True
-    elif room[p[1]+dx[1]][p[0]] == '[':
-      room, moved = push_box(room, (p[0], p[1]+dx[1]), m)
-      if moved: return push_box(room, p, m)
-      else: return room, False
-    elif room[p[1]+dx[1]][p[0]] == ']' and room[p[1]+dx[1]][p[0]+1] == '.':
-      room, moved = push_box(room, (p[0]-1, p[1]+dx[1]), m)
-      if moved: return push_box(room, p, m)
-      else: return room, False
-    elif room[p[1]+dx[1]][p[0]] == '.' and room[p[1]+dx[1]][p[0]+1] == '[':
-      room, moved = push_box(room, (p[0]+1, p[1]+dx[1]), m)
+    elif room[p[1]+dx[1]][p[0]] != ']' or room[p[1]+dx[1]][p[0]+1] != '[':
+      bx = p[0]
+      if room[p[1]+dx[1]][p[0]] == ']': bx -= 1
+      if room[p[1]+dx[1]][p[0]] == '.': bx += 1
+      room, moved = push_box(room, (bx, p[1]+dx[1]), m)
       if moved: return push_box(room, p, m)
       else: return room, False
     else:
@@ -191,24 +170,18 @@ def move2(room, robot, m):
   return room, robot
 
 
-def gps2(room):
-  total = 0
-  for x in range(2*nx):
-    for y in range(ny):
-      if room[y][x] == '[':
-        total += 100*y + x
-  return total
+def part2(room):
 
-def part2(room, robot):
+  robot = get_robot(room)
 
-  for m in moves[:]:
+  for m in moves:
     room, robot = move2(room, robot, m)
 
-  total = gps2(room)
+  total = gps(room)
 
   print("Part 2:", total)
 
 #==============================================================================
 
-part1(room, robot)
-part2(room2, robot2)
+part1(room)
+part2(room2)
