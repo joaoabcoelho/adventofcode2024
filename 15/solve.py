@@ -15,6 +15,16 @@ for d in data:
 
 move_dict = {'>': (1,0), '<': (-1,0), 'v': (0,1), '^': (0,-1)}
 
+room2 = []
+for r in room:
+  row = []
+  for c in r:
+    if c == '#': row += ['#', '#']
+    if c == '.': row += ['.', '.']
+    if c == '@': row += ['@', '.']
+    if c == 'O': row += ['[', ']']
+  room2.append(row)
+
 def get_robot(room):
   nx = len(room[0])
   ny = len(room)
@@ -31,20 +41,10 @@ def get_robot(room):
 
   return robot
 
-def move(room, robot, m):
+def move_box1(room, robot, m):
 
   dx = move_dict[m]
   p = (robot[0]+dx[0], robot[1]+dx[1])
-
-  if room[p[1]][p[0]] == '#':
-    return room, robot
-
-  if room[p[1]][p[0]] == '.':
-    room[robot[1]][robot[0]] = '.'
-    robot = p
-    room[p[1]][p[0]] = '@'
-    return room, robot
-
   b = p
   while room[b[1]][b[0]] == 'O':
     b = (b[0]+dx[0], b[1]+dx[1])
@@ -58,45 +58,6 @@ def move(room, robot, m):
   room[b[1]][b[0]] = 'O'
   return room, robot
   
-
-def print_room(room):
-  for r in room: print(''.join(r))
-
-def gps(room):
-  nx = len(room[0])
-  ny = len(room)
-  total = 0
-  for x in range(nx):
-    for y in range(ny):
-      if room[y][x] in ['O', '[']:
-        total += 100*y + x
-  return total
-  
-#==============================================================================
-
-def part1(room):
-
-  robot = get_robot(room)
-
-  for m in moves:
-    room, robot = move(room, robot, m)
-
-  total = gps(room)
-
-  print("Part 1:", total)
-
-
-#==============================================================================
-
-room2 = []
-for r in room:
-  row = []
-  for c in r:
-    if c == '#': row += ['#', '#']
-    if c == '.': row += ['.', '.']
-    if c == '@': row += ['@', '.']
-    if c == 'O': row += ['[', ']']
-  room2.append(row)
 
 def push_box(room, p, m):
 
@@ -144,7 +105,23 @@ def push_box(room, p, m):
       else: return room_before, False
 
 
-def move2(room, robot, m):
+def move_box2(room, robot, m):
+
+  dx = move_dict[m]
+  p = (robot[0]+dx[0], robot[1]+dx[1])
+  moved = False
+  if room[p[1]][p[0]] == '[':
+    room, moved = push_box(room, p, m)
+  elif room[p[1]][p[0]] == ']':
+    room, moved = push_box(room, (p[0]-1,p[1]), m)
+
+  if moved:
+    room, robot = move(room, robot, m)
+      
+  return room, robot
+
+
+def move(room, robot, m):
 
   dx = move_dict[m]
   p = (robot[0]+dx[0], robot[1]+dx[1])
@@ -158,26 +135,47 @@ def move2(room, robot, m):
     room[p[1]][p[0]] = '@'
     return room, robot
 
-  moved = False
-  if room[p[1]][p[0]] == '[':
-    room, moved = push_box(room, p, m)
-  elif room[p[1]][p[0]] == ']':
-    room, moved = push_box(room, (p[0]-1,p[1]), m)
+  if room[p[1]][p[0]] == 'O':
+    return move_box1(room, robot, m)
+  else:
+    return move_box2(room, robot, m)
 
-  if moved:
-    room, robot = move2(room, robot, m)
-      
-  return room, robot
+def print_room(room):
+  for r in room: print(''.join(r))
 
+def gps(room):
+  nx = len(room[0])
+  ny = len(room)
+  total = 0
+  for x in range(nx):
+    for y in range(ny):
+      if room[y][x] in ['O', '[']:
+        total += 100*y + x
+  return total
 
-def part2(room):
+def solve(room):
 
   robot = get_robot(room)
 
   for m in moves:
-    room, robot = move2(room, robot, m)
+    room, robot = move(room, robot, m)
 
-  total = gps(room)
+  return gps(room)
+  
+#==============================================================================
+
+def part1(room):
+
+  total = solve(room)
+
+  print("Part 1:", total)
+
+
+#==============================================================================
+
+def part2(room):
+
+  total = solve(room)
 
   print("Part 2:", total)
 
