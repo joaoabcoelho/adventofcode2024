@@ -85,15 +85,16 @@ def part1():
 #==============================================================================
 
 def part2():
-  possible = [7 * 8**(len(program)-1)]
-  for k in range(len(program)-2,-1,-1):
+  possible = [0]
+  for k in range(len(program)-1,-1,-1):
     update = []
     for p in possible:
-      for i in range(7):
+      for i in range(8):
         myreg = copy.deepcopy(defaultReg)
         test = p + i * 8**k
         myreg['A'] = test
         run_program(myreg)
+        if len(output)<k+1: continue
         if output[k] == program[k]: update.append(test)
     possible = update
   total = min(possible)
