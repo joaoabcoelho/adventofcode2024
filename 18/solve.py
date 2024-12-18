@@ -55,13 +55,13 @@ def part1():
 #==============================================================================
 
 def part2():
-  n = 12 if is_test else 1024
-  total = 1
-  while total > 0:
-    n += 1
+  n = len(data)
+  total = 0
+  while total == 0:
+    n -= 1
     total = solve(n)
 
-  print("Part 2:", data[n-1])
+  print("Part 2:", data[n])
 
 #==============================================================================
 
