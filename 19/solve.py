@@ -16,8 +16,7 @@ def split(d):
 
 @lru_cache(None)
 def get_opts(d):
-  if not d:
-    return 1
+  if not d: return 1
   return sum(get_opts(o[1]) for o in split(d))
 
 #==============================================================================
