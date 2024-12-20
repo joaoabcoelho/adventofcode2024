@@ -1,5 +1,4 @@
 import sys
-from functools import lru_cache
 
 filename = "input.txt"
 if len(sys.argv)>1: filename = sys.argv[1]
