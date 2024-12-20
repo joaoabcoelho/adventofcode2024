@@ -34,9 +34,8 @@ def solve(ps, minsave):
   nt = len(track)
   for t in track:
     for i in range(-ps,ps+1):
-      for j in range(-ps,ps+1):
+      for j in range(-ps+abs(i),ps-abs(i)+1):
         dist = abs(i)+abs(j)
-        if dist>ps: continue
         e = (t[0]+i, t[1]+j)
         if e not in trackset: continue
         if trackset[e] - trackset[t] - dist < minsave: continue
