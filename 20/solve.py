@@ -17,11 +17,9 @@ for x in range(nx):
       track.append((x,y))
       break
 
-dirs = [(-1,0),(0,1),(1,0),(0,-1)]
-
 while data[track[-1][1]][track[-1][0]]!='E':
   h = track[-1]
-  for d in dirs:
+  for d in [(-1,0),(0,1),(1,0),(0,-1)]:
     n = (h[0]+d[0], h[1]+d[1])
     if not 0 <= n[0] < nx: continue
     if not 0 <= n[1] < ny: continue
@@ -29,15 +27,20 @@ while data[track[-1][1]][track[-1][0]]!='E':
       track.append(n)
       break
 
+trackset = { t: i for i,t in enumerate(track) }
+
 def solve(ps, minsave):
   total = 0
   nt = len(track)
-  for i in range(nt-minsave-2):
-    for j in range(i+minsave+2,nt):
-      dist = abs(track[i][0]-track[j][0]) + abs(track[i][1]-track[j][1])
-      if dist>ps: continue
-      if j-i-dist<minsave: continue
-      total += 1
+  for t in track:
+    for i in range(-ps,ps+1):
+      for j in range(-ps,ps+1):
+        dist = abs(i)+abs(j)
+        if dist>ps: continue
+        e = (t[0]+i, t[1]+j)
+        if e not in trackset: continue
+        if trackset[e] - trackset[t] - dist < minsave: continue
+        total+=1
   return total
 
 #==============================================================================
