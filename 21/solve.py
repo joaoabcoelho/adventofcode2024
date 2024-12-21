@@ -20,27 +20,22 @@ for k,v in movpad.items(): padmov[v] = k
 
 moves = {'^': (0,-1), 'v': (0,1), '<': (-1,0), '>': (1,0)}
 
-def move(state, button, level, level0, nrobots):
-  if level!=level0: return state
-  pos = numpad[state] if level==nrobots else movpad[state]
+@lru_cache(None)
+def move(state, button, isnum):
+  pos = numpad[state] if isnum else movpad[state]
   dpos = moves[button]
   pos = (pos[0]+dpos[0], pos[1]+dpos[1])
-  return padnum.get(pos,'') if level==nrobots else padmov.get(pos,"")
+  return padnum.get(pos,'') if isnum else padmov.get(pos,"")
 
-cache = {}
-def robot(state, button, level, nrobots):
-
-  key = (state[level:], button, level, nrobots)
-  if key in cache:
-    return state[:level] + cache[key]
+@lru_cache(None)
+def robot(state, button):
+  isnum = (len(state) == 1)
 
   if button == 'A':
-    if level == nrobots: return state
-    return robot(state, state[level], level+1, nrobots)
+    if isnum: return state
+    return state[:1] + robot(state[1:], state[0])
 
-  out = tuple( move(state[l], button, l, level, nrobots) for l in range(nrobots+1) )
-
-  cache[key] = out[level:]
+  out = (move(state[0], button, isnum),) + state[1:]
 
   return out
 
@@ -49,12 +44,12 @@ def is_valid(state):
     if s=='': return False
   return True
 
-def get_neighbors(state, visited, nrobots):
+def get_neighbors(state, visited):
 
   buttons = ['<','^','v','>','A']
   neighbors = []
   for b in buttons:
-    n = robot(state, b, 0, nrobots)
+    n = robot(state, b)
     if n in visited: continue
     if not is_valid(n): continue
     neighbors.append(n)
@@ -76,7 +71,7 @@ def solve(start, end, nrobots):
       total = test[0]
       break
 
-    neighbors = get_neighbors(test[1], visited, nrobots)
+    neighbors = get_neighbors(test[1], visited)
 
     for n in neighbors:
       heapq.heappush(heap, (test[0]+1, n))
