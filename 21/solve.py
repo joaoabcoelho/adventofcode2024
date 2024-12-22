@@ -20,24 +20,24 @@ for k,v in movpad.items(): padmov[v] = k
 
 moves = {'^': (0,-1), 'v': (0,1), '<': (-1,0), '>': (1,0)}
 
-@lru_cache(None)
-def move(state, button, isnum):
-  pos = numpad[state] if isnum else movpad[state]
+def move(state, button, level):
+  key = state[level]
+  isnum = level == len(state)-1
+  pos = numpad[key] if isnum else movpad[key]
   dpos = moves[button]
   pos = (pos[0]+dpos[0], pos[1]+dpos[1])
-  return padnum.get(pos,'') if isnum else padmov.get(pos,"")
+  key = padnum.get(pos,'') if isnum else padmov.get(pos,"")
+  return state[:level] + (key,) + state[level+1:]
 
-@lru_cache(None)
 def robot(state, button):
-  isnum = (len(state) == 1)
 
-  if button == 'A':
-    if isnum: return state
-    return state[:1] + robot(state[1:], state[0])
+  if button!='A': return move(state, button, 0)
 
-  out = (move(state[0], button, isnum),) + state[1:]
+  next_move = 0
+  while next_move < len(state)-1 and state[next_move] == 'A': next_move += 1
+  if next_move==len(state)-1: return state
 
-  return out
+  return move(state, state[next_move], next_move+1)
 
 def is_valid(state):
   for s in state:
