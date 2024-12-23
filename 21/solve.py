@@ -48,13 +48,13 @@ def minpath(start, end, isnum=True):
   return paths
 
 @lru_cache
-def rsolve(start, end, nrobots):
+def rsolve(start, end, nrobots, isnum):
 
-  paths = minpath(start, end, False)
+  paths = minpath(start, end, isnum)
 
   if nrobots==0: return len(paths[0])
 
-  values = [ sum( rsolve(p[(k-1)%len(p)], p[k], nrobots-1) for k in range(len(p)) ) for p in paths ]
+  values = [ sum( rsolve(p[(k-1)%len(p)], p[k], nrobots-1, False) for k in range(len(p)) ) for p in paths ]
 
   return min(values)
 
@@ -62,9 +62,7 @@ def get_sol(pin, n):
   total = 0
   for k in range(len(pin)):
     step = (pin[(k-1)%len(pin)], pin[k])
-    paths = minpath(step[0], step[1])
-    values = [ sum( rsolve(p[(k-1)%len(p)], p[k], n-1) for k in range(len(p)) ) for p in paths ]
-    total += min(values)   
+    total += rsolve(step[0], step[1], n, True)
 
   return total
 
