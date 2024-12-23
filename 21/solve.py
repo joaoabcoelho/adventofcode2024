@@ -21,19 +21,16 @@ for k,v in movpad.items(): padmov[v] = k
 
 moves = {'^': (0,-1), 'v': (0,1), '<': (-1,0), '>': (1,0)}
 
-def move(state, button, level):
-  key = state[level]
-  isnum = level == len(state)-1
+def move(key, button, isnum):
   pos = numpad[key] if isnum else movpad[key]
   dpos = moves[button]
   pos = (pos[0]+dpos[0], pos[1]+dpos[1])
   key = padnum.get(pos,'') if isnum else padmov.get(pos,"")
-  return state[:level] + (key,) + state[level+1:]
+  return key
 
 def validpath(start, path, isnum):
   for p in path:
-    k = 1 if isnum else 0
-    start = move((start,start), p, k)[k]
+    start = move(start, p, isnum)
     if not start: return False
   return True
   
