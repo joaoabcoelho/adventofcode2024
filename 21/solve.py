@@ -54,7 +54,8 @@ def rsolve(start, end, nrobots, isnum):
 
   if nrobots==0: return len(paths[0])
 
-  values = [ sum( rsolve(p[(k-1)%len(p)], p[k], nrobots-1, False) for k in range(len(p)) ) for p in paths ]
+  values = [ sum( rsolve(p[(k-1)%len(p)], p[k], nrobots-1, False)
+             for k in range(len(p)) ) for p in paths ]
 
   return min(values)
 
