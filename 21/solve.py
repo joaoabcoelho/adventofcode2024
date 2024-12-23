@@ -1,6 +1,6 @@
 
 import sys
-from functools import lru_cache
+from functools import cache
 from itertools import permutations
 
 filename = "input.txt"
@@ -47,7 +47,7 @@ def minpath(start, end, isnum=True):
 
   return paths
 
-@lru_cache
+@cache
 def rsolve(start, end, nrobots, isnum):
 
   paths = minpath(start, end, isnum)
