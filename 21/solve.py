@@ -1,5 +1,5 @@
 
-import sys, heapq
+import sys
 from functools import lru_cache
 from itertools import permutations
 
@@ -20,27 +20,6 @@ padmov = {}
 for k,v in movpad.items(): padmov[v] = k
 
 moves = {'^': (0,-1), 'v': (0,1), '<': (-1,0), '>': (1,0)}
-rmoves = {}
-for k,v in moves.items(): rmoves[v] = k
-
-seq = { 'AA': 'A', 'A<': 'v<<A', 'A^': '<A', 'Av': 'v<A', 'A>': 'vA',
-        '<A': '>>^A', '<<': 'A', '<^': '>^A', '<v': '>A', '<>': '>>A',
-        '^A': '>A', '^<': 'v<A', '^^': 'A', '^v': 'vA', '^>': '>vA',
-        'vA': '>^A', 'v<': '<A', 'v^': '^A', 'vv': 'A', 'v>': '>A',
-        '>A': '^A', '><': '<<A', '>^': '^<A', '>v': '<A', '>>': 'A'}
-
-def seq2dict(s):
-  d = {}
-  for k in range(len(s)):
-    m = s[(k-1)%len(s)]+s[k]
-    d[m] = d.get(m,0) + 1
-  return d
-
-def get_move(k1,k2):
-  p1 = numpad[k1]
-  p2 = numpad[k2]
-  dp = (p2[0]-p1[0], p2[1]-p1[1])
-  return rmoves.get(dp,'')
 
 def move(state, button, level):
   key = state[level]
@@ -50,33 +29,6 @@ def move(state, button, level):
   pos = (pos[0]+dpos[0], pos[1]+dpos[1])
   key = padnum.get(pos,'') if isnum else padmov.get(pos,"")
   return state[:level] + (key,) + state[level+1:]
-
-def robot(state, button):
-
-  if button!='A': return move(state, button, 0)
-
-  next_move = 0
-  while next_move < len(state)-1 and state[next_move] == 'A': next_move += 1
-  if next_move==len(state)-1: return state
-
-  return move(state, state[next_move], next_move+1)
-
-def is_valid(state):
-  for s in state:
-    if s=='': return False
-  return True
-
-def get_neighbors(state, visited):
-
-  buttons = ['<','^','v','>','A']
-  neighbors = []
-  for b in buttons:
-    n = robot(state, b)
-    if n in visited: continue
-    if not is_valid(n): continue
-    neighbors.append(n)
-
-  return neighbors
 
 def validpath(start, path, isnum):
   for p in path:
@@ -118,29 +70,6 @@ def get_sol(pin, n):
     total += min(values)   
 
   return total
-
-def solve(start, end, nrobots):
-
-  total = 0
-  start = tuple(['A']*nrobots + [start])
-  end = tuple(['A']*nrobots + [end])
-  visited = {start}
-  heap = [(0, start)]
-  heapq.heapify(heap)
-
-  while heap:
-    test = heapq.heappop(heap)
-    if test[1] == end:
-      total = test[0]
-      break
-
-    neighbors = get_neighbors(test[1], visited)
-
-    for n in neighbors:
-      heapq.heappush(heap, (test[0]+1, n))
-      visited.add(n)
-
-  return total+1
 
 def get_score(d, nrobots):
   value = int(d[:-1])
