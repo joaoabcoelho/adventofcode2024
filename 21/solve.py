@@ -1,6 +1,7 @@
 
 import sys, heapq
 from functools import lru_cache
+from itertools import permutations
 
 filename = "input.txt"
 if len(sys.argv)>1: filename = sys.argv[1]
@@ -19,6 +20,27 @@ padmov = {}
 for k,v in movpad.items(): padmov[v] = k
 
 moves = {'^': (0,-1), 'v': (0,1), '<': (-1,0), '>': (1,0)}
+rmoves = {}
+for k,v in moves.items(): rmoves[v] = k
+
+seq = { 'AA': 'A', 'A<': 'v<<A', 'A^': '<A', 'Av': 'v<A', 'A>': 'vA',
+        '<A': '>>^A', '<<': 'A', '<^': '>^A', '<v': '>A', '<>': '>>A',
+        '^A': '>A', '^<': 'v<A', '^^': 'A', '^v': 'vA', '^>': '>vA',
+        'vA': '>^A', 'v<': '<A', 'v^': '^A', 'vv': 'A', 'v>': '>A',
+        '>A': '^A', '><': '<<A', '>^': '^<A', '>v': '<A', '>>': 'A'}
+
+def seq2dict(s):
+  d = {}
+  for k in range(len(s)):
+    m = s[(k-1)%len(s)]+s[k]
+    d[m] = d.get(m,0) + 1
+  return d
+
+def get_move(k1,k2):
+  p1 = numpad[k1]
+  p2 = numpad[k2]
+  dp = (p2[0]-p1[0], p2[1]-p1[1])
+  return rmoves.get(dp,'')
 
 def move(state, button, level):
   key = state[level]
@@ -56,6 +78,47 @@ def get_neighbors(state, visited):
 
   return neighbors
 
+def validpath(start, path, isnum):
+  for p in path:
+    k = 1 if isnum else 0
+    start = move((start,start), p, k)[k]
+    if not start: return False
+  return True
+  
+def minpath(start, end, isnum=True):
+  p1 = numpad[start] if isnum else movpad[start]
+  p2 = numpad[end] if isnum else movpad[end]
+  dp = (p2[0]-p1[0], p2[1]-p1[1])
+  path = abs(dp[0]) * ('<' if dp[0]<0 else '>') + \
+         abs(dp[1]) * ('^' if dp[1]<0 else 'v')
+
+  paths = set(permutations(path))
+  
+  paths = [ ''.join(p) + "A" for p in paths if validpath(start, p, isnum) ]
+
+  return paths
+
+@lru_cache
+def rsolve(start, end, nrobots):
+
+  paths = minpath(start, end, False)
+
+  if nrobots==0: return len(paths[0])
+
+  values = [ sum( rsolve(p[(k-1)%len(p)], p[k], nrobots-1) for k in range(len(p)) ) for p in paths ]
+
+  return min(values)
+
+def get_sol(pin, n):
+  total = 0
+  for k in range(len(pin)):
+    step = (pin[(k-1)%len(pin)], pin[k])
+    paths = minpath(step[0], step[1])
+    values = [ sum( rsolve(p[(k-1)%len(p)], p[k], n-1) for k in range(len(p)) ) for p in paths ]
+    total += min(values)   
+
+  return total
+
 def solve(start, end, nrobots):
 
   total = 0
@@ -79,12 +142,9 @@ def solve(start, end, nrobots):
 
   return total+1
 
-def get_length(d, nrobots):
-  return sum( solve(d[(k-1)%len(d)], d[k], nrobots) for k in range(len(d)) )
-
 def get_score(d, nrobots):
   value = int(d[:-1])
-  length = get_length(d, nrobots)
+  length = get_sol(d, nrobots)
   return value * length
 
 #==============================================================================
@@ -96,8 +156,8 @@ def part1():
 #==============================================================================
 
 def part2():
-  total = sum( get_score(d, 5) for d in data )
-  print("Part 2:", total, "for 5 robots")
+  total = sum( get_score(d, 25) for d in data )
+  print("Part 2:", total)
 
 #==============================================================================
 
