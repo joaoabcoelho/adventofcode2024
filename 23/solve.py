@@ -16,26 +16,36 @@ def has_t(s):
     if x.startswith('t'): return True
   return False
 
+def connects_all(s, o):
+  for x in s:
+    if o not in connections[x]: return False
+  return True
+
+def get_next(lower):
+  higher = set()
+  for s in lower:
+    options = connections[s[0]]
+    for o in options:
+      if connects_all(s, o):
+        higher.add(tuple(sorted(list(s)+[o])))
+  return higher
+
 #==============================================================================
 
 def part1():
-  threesomes = set()
-  for k,v in connections.items():
-    n = len(v)
-    if n<2: continue
-    for i in range(n):
-      for j in range(i+1,n):
-        if v[i] in connections[v[j]]:
-          s = [k,v[i],v[j]]
-          if not has_t(s): continue
-          threesomes.add(tuple(sorted(s)))
-  print("Part 1:", len(threesomes))
+  total = sum( 1 for s in get_next(data) if has_t(s) )
+  print("Part 1:", total)
 
 #==============================================================================
 
 def part2():
-  total = 0
-  print("Part 2:", total)
+  sets = data
+  while True:
+    print(str(len(list(sets)[0]))+'-somes:', len(sets))
+    next = get_next(sets)
+    if len(next)==0: break
+    sets = next
+  print("Part 2:", ','.join(list(sets)[0]))
 
 #==============================================================================
 
