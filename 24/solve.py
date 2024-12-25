@@ -51,8 +51,16 @@ def get_values(x,y):
 
 def part2():
   total = 0
-  myvals = get_values(10,13)
-  print("Part 2:", compute(myvals, gates))
+  # Check wrong bits and examine adder gates manually
+  for k in range(45):
+    vxor = get_values(2**k,0)
+    vand = get_values(2**k,2**k)
+    zxor = compute(vxor, gates)
+    zand = compute(vand, gates)
+    if zxor != 2**k: print(k, 'xor', bin(zxor))
+    if zand != 2**(k+1): print(k, 'and', bin(zand))
+  print("Part 2:", ','.join(sorted(["mvb","z08","wss","z18",
+                                    "z23","bmn","rds","jss"])))
 
 #==============================================================================
 
